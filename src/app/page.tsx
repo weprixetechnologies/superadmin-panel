@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/axiosInstance';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.29.116:4898';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181/backend';
 const APP_ROLE = 'SUPERADMIN';
 
 export default function LoginPage() {
