@@ -84,7 +84,18 @@ api.interceptors.response.use(
         if (status === 403) {
             const msg: string = (error.response?.data as any)?.message ?? '';
             console.log(`[Axios] 403 Forbidden on ${requestUrl}. Message: "${msg}"`);
-            const isAuthError = msg.toLowerCase().includes('inactive') || msg.toLowerCase().includes('role');
+
+            if (msg.toLowerCase().includes('role')) {
+                if (typeof document !== 'undefined') {
+                    const toast = document.createElement('div');
+                    toast.innerText = 'ROLE MISMATCH';
+                    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#ef4444;color:white;padding:12px 24px;border-radius:8px;z-index:99999;box-shadow:0 4px 6px rgba(0,0,0,0.1);font-family:sans-serif;font-size:14px;font-weight:600;transition:opacity 0.3s;';
+                    document.body.appendChild(toast);
+                    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+                }
+            }
+
+            const isAuthError = msg.toLowerCase().includes('inactive');
             if (isAuthError) {
                 console.log(`[Axios] 403 is Auth/Role related. Forcing logout.`);
                 forceLogout();

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
     ArrowLeft, User as UserIcon, Building2, Smartphone, Key, MapPin, 
-    Clock, AlertTriangle, ShieldAlert, CheckCircle, Wrench, XCircle
+    Clock, AlertTriangle, ShieldAlert, CheckCircle, Wrench, XCircle, HardDrive
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/utils/axiosInstance';
@@ -28,6 +28,31 @@ export default function TicketDetailsPage() {
     const [activeModal, setActiveModal] = useState<string | null>(null);
     const [modalData, setModalData] = useState<any>({});
     const [modalLoading, setModalLoading] = useState(false);
+
+    // Engineer Search States
+    const [engineers, setEngineers] = useState<any[]>([]);
+    const [engineerSearch, setEngineerSearch] = useState('');
+    const [loadingEngineers, setLoadingEngineers] = useState(false);
+
+    useEffect(() => {
+        if (activeModal === 'ASSIGN' && engineers.length === 0) {
+            setLoadingEngineers(true);
+            api.get('/employees/list?role=ENGINEER')
+                .then(res => {
+                    if (res.data?.success) {
+                        setEngineers(res.data.employees || res.data.data || []);
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => setLoadingEngineers(false));
+        }
+    }, [activeModal]);
+
+    const filteredEngineers = engineers.filter(e => 
+        e.full_name?.toLowerCase().includes(engineerSearch.toLowerCase()) || 
+        e.employee_code?.toLowerCase().includes(engineerSearch.toLowerCase()) ||
+        e.mobile?.includes(engineerSearch)
+    );
 
     const fetchTicket = async () => {
         try {
@@ -164,6 +189,49 @@ export default function TicketDetailsPage() {
                                 <p className="text-sm font-medium text-slate-900">{ticket.merchant_address}</p>
                                 <p className="text-xs text-slate-600">{ticket.merchant_pincode}</p>
                             </div>
+                            {ticket.mcc_code && (
+                                <div>
+                                    <p className="text-xs text-slate-500 mb-0.5">MCC Code</p>
+                                    <p className="text-sm font-medium text-slate-900">{ticket.mcc_code}</p>
+                                </div>
+                            )}
+                            {ticket.zone_name && (
+                                <div>
+                                    <p className="text-xs text-slate-500 mb-0.5">Zone Name</p>
+                                    <p className="text-sm font-medium text-slate-900">{ticket.zone_name}</p>
+                                </div>
+                            )}
+                            {ticket.sponsor_bank && (
+                                <div>
+                                    <p className="text-xs text-slate-500 mb-0.5">Sponsor Bank</p>
+                                    <p className="text-sm font-medium text-slate-900">{ticket.sponsor_bank}</p>
+                                </div>
+                            )}
+                            {ticket.mid && (
+                                <div>
+                                    <p className="text-xs text-slate-500 mb-0.5">MID</p>
+                                    <p className="text-sm font-medium text-slate-900">{ticket.mid}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Machine Info */}
+                    <div className="bg-white p-5 rounded-[24px] border border-slate-200 shadow-sm">
+                        <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                            <HardDrive className="w-4 h-4 text-slate-400" /> Machine Details
+                        </h3>
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-xs text-slate-500 mb-0.5">Machine ID</p>
+                                <p className="text-sm font-medium text-slate-900">{ticket.machine_id || 'Not specified'}</p>
+                            </div>
+                            {ticket.tid && (
+                                <div>
+                                    <p className="text-xs text-slate-500 mb-0.5">TID</p>
+                                    <p className="text-sm font-medium text-slate-900">{ticket.tid}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -361,9 +429,41 @@ export default function TicketDetailsPage() {
                         }} className="p-6 space-y-4">
                             
                             {activeModal === 'ASSIGN' && (
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Engineer ID</label>
-                                    <input type="text" required value={modalData.engineer_id || ''} onChange={e => setModalData({...modalData, engineer_id: e.target.value})} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Enter Engineer UUID" />
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Search Engineer</label>
+                                        <input 
+                                            type="text" 
+                                            value={engineerSearch} 
+                                            onChange={e => setEngineerSearch(e.target.value)} 
+                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                                            placeholder="Search by name, code, or mobile" 
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="max-h-[250px] overflow-y-auto border border-slate-200 rounded-xl bg-white divide-y divide-slate-100">
+                                        {loadingEngineers ? (
+                                            <div className="p-4 text-center text-sm text-slate-500">Loading engineers...</div>
+                                        ) : filteredEngineers.length === 0 ? (
+                                            <div className="p-4 text-center text-sm text-slate-500">No engineers found.</div>
+                                        ) : (
+                                            filteredEngineers.map(engineer => (
+                                                <div 
+                                                    key={engineer.id}
+                                                    onClick={() => setModalData({...modalData, engineer_id: engineer.id})}
+                                                    className={`p-3 cursor-pointer hover:bg-slate-50 flex items-center justify-between transition-colors ${modalData.engineer_id === engineer.id ? 'bg-emerald-50 hover:bg-emerald-50' : ''}`}
+                                                >
+                                                    <div>
+                                                        <div className="font-medium text-slate-900 text-sm">{engineer.full_name}</div>
+                                                        <div className="text-xs text-slate-500">{engineer.employee_code} • {engineer.mobile}</div>
+                                                    </div>
+                                                    {modalData.engineer_id === engineer.id && (
+                                                        <CheckCircle className="w-5 h-5 text-emerald-600" />
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
                             )}
 

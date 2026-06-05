@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Info, Key, Eye, EyeOff, Upload, ArrowLeft, ShieldBan } from 'lucide-react';
+import { CheckCircle2, Info, Key, Eye, EyeOff, Upload, ArrowLeft, ShieldBan, Check } from 'lucide-react';
 import Link from 'next/link';
 import api from '../../../../../utils/axiosInstance';
 
@@ -13,6 +13,11 @@ export default function EditEmployee({ params }: { params: Promise<{ employeeID:
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const [branchSearch, setBranchSearch] = useState('');
+  const [branches, setBranches] = useState<any[]>([]);
+  const [showBranches, setShowBranches] = useState(false);
+  const [searchingBranches, setSearchingBranches] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -50,6 +55,7 @@ export default function EditEmployee({ params }: { params: Promise<{ employeeID:
           password: '',
           confirm_password: ''
         });
+        setBranchSearch(emp.branch_name || emp.branch_id || '');
       } else {
         alert(data.message || 'Failed to load employee');
         router.push('/dashboard/employees');
@@ -65,6 +71,26 @@ export default function EditEmployee({ params }: { params: Promise<{ employeeID:
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      if (!showBranches) return;
+      setSearchingBranches(true);
+      try {
+        const { data } = await api.get('/branches', { params: { search: branchSearch, limit: 10 } });
+        if (data?.success) {
+          setBranches(data.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch branches', err);
+      } finally {
+        setSearchingBranches(false);
+      }
+    };
+
+    const timer = setTimeout(fetchBranches, 300);
+    return () => clearTimeout(timer);
+  }, [branchSearch, showBranches]);
 
   const generatePassword = () => {
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
@@ -210,9 +236,55 @@ export default function EditEmployee({ params }: { params: Promise<{ employeeID:
                     <option value="OPERATOR">Operator</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative">
                   <label className="text-sm font-medium text-zinc-700">Branch <span className="text-red-500">*</span></label>
-                  <input required name="branch_id" value={formData.branch_id} onChange={handleChange} type="text" className="w-full px-4 py-2 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
+                  <input
+                    required
+                    type="text"
+                    value={branchSearch}
+                    onChange={(e) => {
+                      setBranchSearch(e.target.value);
+                      setShowBranches(true);
+                      setFormData(prev => ({ ...prev, branch_id: '' }));
+                    }}
+                    placeholder="Search branches..."
+                    onFocus={() => setShowBranches(true)}
+                    className="w-full px-4 py-2 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  />
+                  {showBranches && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg max-h-[200px] overflow-y-auto">
+                      {searchingBranches ? (
+                        <div className="p-3 text-sm text-zinc-500 text-center">Searching...</div>
+                      ) : branches.length > 0 ? (
+                        branches.map(b => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, branch_id: b.id }));
+                              setBranchSearch(`${b.name || b.branch_name || b.id}`);
+                              setShowBranches(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-zinc-50 flex items-center justify-between transition-colors ${
+                              formData.branch_id === b.id ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-zinc-700'
+                            }`}
+                          >
+                            <div>
+                              <p>{b.name || b.branch_name}</p>
+                              {b.address && <p className="text-xs text-zinc-500 line-clamp-1">{b.address}</p>}
+                            </div>
+                            {formData.branch_id === b.id && <Check className="w-4 h-4 text-emerald-600" />}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="p-3 text-sm text-zinc-500 text-center">No branches found</div>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                    <Info className="w-3.5 h-3.5" />
+                    As a Superadmin, you can assign any branch.
+                  </p>
                 </div>
               </div>
             </div>

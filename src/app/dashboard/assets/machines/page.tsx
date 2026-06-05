@@ -258,7 +258,7 @@ function MachinesPageContent() {
                                                 </Link>
                                                 {user?.role !== 'ENGINEER' && (
                                                     <>
-                                                        {!m.tid ? (
+                                                        {m.status !== 'DEPLOYED' ? (
                                                             <button 
                                                                 onClick={() => {
                                                                     setSelectedMachineId(m.id);
@@ -329,6 +329,7 @@ function MachinesPageContent() {
                 isOpen={mapTidOpen}
                 onClose={() => setMapTidOpen(false)}
                 machineId={selectedMachineId}
+                currentTid={machines.find((m: any) => m.id === selectedMachineId)?.tid}
                 onSuccess={() => {
                     fetchMachines();
                 }}

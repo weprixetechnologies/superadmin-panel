@@ -27,8 +27,13 @@ export default function CreateTicketPage() {
         merchant_address: '',
         merchant_pincode: '',
         machine_id: '',
+        tid: '',
         complaint_category: '',
-        complaint_description: ''
+        complaint_description: '',
+        mcc_code: '',
+        zone_name: '',
+        sponsor_bank: '',
+        mid: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -38,16 +43,27 @@ export default function CreateTicketPage() {
 
     // Branch Search State
     const [branchSearch, setBranchSearch] = useState('');
+    const [branchCodeSearch, setBranchCodeSearch] = useState('');
+    const [showBranchCodeOptions, setShowBranchCodeOptions] = useState(false);
     const [branches, setBranches] = useState<any[]>([]);
     const [showBranches, setShowBranches] = useState(false);
     const [searchingBranches, setSearchingBranches] = useState(false);
     const branchRef = useRef<HTMLDivElement>(null);
+
+    // Merchant Search State
+    const [merchantSearchQuery, setMerchantSearchQuery] = useState('');
+    const [merchantOptions, setMerchantOptions] = useState<any[]>([]);
+    const [showMerchantDropdown, setShowMerchantDropdown] = useState(false);
+    const merchantRef = useRef<HTMLDivElement>(null);
 
     // Handle clicking outside to close branch dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (branchRef.current && !branchRef.current.contains(event.target as Node)) {
                 setShowBranches(false);
+            }
+            if (merchantRef.current && !merchantRef.current.contains(event.target as Node)) {
+                setShowMerchantDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -57,12 +73,21 @@ export default function CreateTicketPage() {
     // Search Branches
     useEffect(() => {
         const fetchBranches = async () => {
+            if (!showBranches && !showBranchCodeOptions) return;
             if (!showBranches) return;
             setSearchingBranches(true);
             try {
-                const { data } = await api.get('/branches', { params: { search: branchSearch, limit: 10 } });
+                const { data } = await api.get('/branches', { params: { search: showBranchCodeOptions ? branchCodeSearch : branchSearch, limit: 10 } });
                 if (data?.success) {
                     setBranches(data.data || []);
+                }
+                            if (data?.success && showBranchCodeOptions && branchCodeSearch) {
+                    const exactMatch = data.data.find((b: any) => b.branch_code === branchCodeSearch.toUpperCase());
+                    if (exactMatch) {
+                        setFormData(prev => ({ ...prev, branch_id: exactMatch.id }));
+                        setBranchSearch(exactMatch.branch_name || exactMatch.name || '');
+                        setShowBranchCodeOptions(false);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch branches', err);
@@ -73,7 +98,41 @@ export default function CreateTicketPage() {
 
         const timer = setTimeout(fetchBranches, 300);
         return () => clearTimeout(timer);
-    }, [branchSearch, showBranches]);
+    }, [branchSearch, showBranches, branchCodeSearch, showBranchCodeOptions]);
+
+    const handleMerchantSearch = async (query: string) => {
+        setMerchantSearchQuery(query);
+        try {
+            if (!query) {
+                setMerchantOptions([]);
+                return;
+            }
+            const { data } = await api.get(`/merchants?search=${encodeURIComponent(query)}&limit=10`);
+            const merchants = Array.isArray(data.merchants) ? data.merchants : (Array.isArray(data.data) ? data.data : (data.data?.merchants || []));
+            setMerchantOptions(merchants);
+            setShowMerchantDropdown(true);
+        } catch (err) {
+            console.error('Failed to fetch merchants', err);
+        }
+    };
+
+    const selectMerchant = (m: any) => {
+        setMerchantSearchQuery(m.full_name);
+        setFormData(prev => ({
+            ...prev,
+            merchant_name: m.full_name || '',
+            business_name: m.business_name || '',
+            merchant_mobile: m.mobile || '',
+            merchant_email: m.email || '',
+            merchant_address: m.address || '',
+            merchant_pincode: m.pincode || '',
+            mcc_code: m.mcc_code || '',
+            zone_name: m.zone_name || '',
+            sponsor_bank: m.sponsor_bank || '',
+            mid: m.mid || ''
+        }));
+        setShowMerchantDropdown(false);
+    };
 
     const handleMachineSearch = async (query: string) => {
         setMachineSearchQuery(query);
@@ -160,6 +219,36 @@ export default function CreateTicketPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2 relative" ref={merchantRef}>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Search Existing Merchant (Optional)</label>
+                            <div className="relative">
+                                <input 
+                                    type="text" 
+                                    placeholder="Search by name, business name, or mobile..." 
+                                    value={merchantSearchQuery} 
+                                    onChange={(e) => handleMerchantSearch(e.target.value)}
+                                    onFocus={() => { if (merchantSearchQuery) setShowMerchantDropdown(true) }}
+                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                                />
+                                <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            </div>
+                            {showMerchantDropdown && merchantOptions.length > 0 && (
+                                <ul className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-auto">
+                                    {merchantOptions.map((m: any) => (
+                                        <li 
+                                            key={m.id} 
+                                            onClick={() => selectMerchant(m)}
+                                            className="px-4 py-3 hover:bg-emerald-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                                        >
+                                            <div className="font-semibold text-slate-900">{m.full_name} <span className="text-sm font-normal text-slate-500">({m.mobile})</span></div>
+                                            <div className="text-xs text-slate-500 mt-1 line-clamp-1">{m.address}</div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            <p className="text-xs text-slate-500 mt-2">Selecting a merchant will auto-fill the details below.</p>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-2">Merchant Name *</label>
                             <input 
@@ -199,6 +288,34 @@ export default function CreateTicketPage() {
                             <label className="block text-sm font-medium text-slate-700 mb-2">Pincode *</label>
                             <input 
                                 type="text" name="merchant_pincode" required maxLength={6} minLength={6} pattern="\d{6}" value={formData.merchant_pincode} onChange={handleChange}
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">MCC Code</label>
+                            <input 
+                                type="text" name="mcc_code" value={formData.mcc_code} onChange={handleChange} placeholder="Optional"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Zone Name</label>
+                            <input 
+                                type="text" name="zone_name" value={formData.zone_name} onChange={handleChange} placeholder="Optional"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Sponsor Bank</label>
+                            <input 
+                                type="text" name="sponsor_bank" value={formData.sponsor_bank} onChange={handleChange} placeholder="Optional"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">MID</label>
+                            <input 
+                                type="text" name="mid" value={formData.mid} onChange={handleChange} placeholder="Optional"
                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                             />
                         </div>
@@ -248,6 +365,13 @@ export default function CreateTicketPage() {
                             )}
                             <p className="text-xs text-slate-500 mt-2">Search suggested. Custom machine IDs are also accepted if the machine is not found.</p>
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Terminal ID (TID)</label>
+                            <input 
+                                type="text" name="tid" value={formData.tid} onChange={handleChange} placeholder="Optional"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -290,6 +414,7 @@ export default function CreateTicketPage() {
                                                 onClick={() => {
                                                     setFormData(prev => ({ ...prev, branch_id: b.id }));
                                                     setBranchSearch(`${b.name || b.branch_name || b.id}`);
+                                                    setBranchCodeSearch(b.branch_code || '');
                                                     setShowBranches(false);
                                                 }}
                                                 className={`w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center justify-between transition-colors border-b border-slate-100 last:border-b-0 ${

@@ -154,9 +154,9 @@ export default function CreateBranch() {
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Branch Code <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-medium text-zinc-700 mb-1.5">Branch Code <span className="text-zinc-400 font-normal">(Optional)</span></label>
                                 <input 
-                                    required
+                                    
                                     name="branch_code"
                                     value={formData.branch_code}
                                     onChange={handleChange}
@@ -182,6 +182,7 @@ export default function CreateBranch() {
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-zinc-700 mb-1.5">Branch Name <span className="text-red-500">*</span></label>
                                 <input 
+                                    
                                     required
                                     name="branch_name"
                                     value={formData.branch_name}
@@ -248,7 +249,7 @@ export default function CreateBranch() {
                         <div>
                             <label className="block text-sm font-medium text-zinc-700 mb-1.5">Full Address <span className="text-red-500">*</span></label>
                             <textarea 
-                                required
+                                
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
@@ -287,7 +288,7 @@ export default function CreateBranch() {
                                 <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3">
                                     <div className="flex-1 relative">
                                         <input
-                                            required
+                                            
                                             value={row.pincode_from}
                                             onChange={(e) => handlePincodeChange(index, 'pincode_from', e.target.value)}
                                             disabled={submitting}
@@ -301,7 +302,7 @@ export default function CreateBranch() {
                                     <span className="text-zinc-400 hidden sm:block">-</span>
                                     <div className="flex-1 relative">
                                         <input
-                                            required
+                                            
                                             value={row.pincode_to}
                                             onChange={(e) => handlePincodeChange(index, 'pincode_to', e.target.value)}
                                             disabled={submitting}
