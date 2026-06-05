@@ -137,7 +137,7 @@ export default function AddMachineDialog({ isOpen, onClose, onSuccess }: AddMach
                             </div>
                         </div>
 
-                        {['SUPERADMIN', 'SUPER_ADMIN'].includes(user?.role?.toUpperCase()) && (
+                        {['SUPERADMIN', 'SUPERADMIN'].includes(user?.role?.toUpperCase()) && (
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Branch ID *

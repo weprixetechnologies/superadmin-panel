@@ -83,7 +83,7 @@ export default function CreateMerchant() {
             if (!payload.email) delete payload.email;
             
             // For operators/managers, branch_id is implicitly derived in the backend via token
-            if (user?.role !== 'SUPERADMIN' && user?.role !== 'SUPER_ADMIN') {
+            if (user?.role !== 'SUPERADMIN' && user?.role !== 'SUPERADMIN') {
                 delete payload.branch_id;
             }
 

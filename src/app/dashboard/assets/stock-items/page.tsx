@@ -124,7 +124,7 @@ function StockItemsPageContent() {
                     <option value="OTHER">Other</option>
                 </select>
 
-                {user?.role === 'SUPER_ADMIN' && (
+                {user?.role === 'SUPERADMIN' && (
                     <div className="min-w-[140px]">
                         <input 
                             type="text" 
@@ -178,7 +178,7 @@ function StockItemsPageContent() {
                                             <div className="font-medium text-slate-900">{m.item_name}</div>
                                             <div className="text-sm font-mono text-slate-500 mt-0.5">SN: {m.serial_number}</div>
                                             {m.brand && <div className="text-xs text-slate-400 mt-1">{m.brand} {m.model}</div>}
-                                            {user?.role === 'SUPER_ADMIN' && <div className="text-xs text-slate-400 mt-1">Branch: {m.branch_id}</div>}
+                                            {user?.role === 'SUPERADMIN' && <div className="text-xs text-slate-400 mt-1">Branch: {m.branch_id}</div>}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm text-slate-700">{m.category}</span>
@@ -214,7 +214,7 @@ function StockItemsPageContent() {
                                                             <button className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                                                                 <Edit className="w-4 h-4" /> Edit
                                                             </button>
-                                                            {['MANAGER', 'SUPER_ADMIN', 'SUPERADMIN'].includes(user?.role || '') && (
+                                                            {['MANAGER', 'SUPERADMIN', 'SUPERADMIN'].includes(user?.role || '') && (
                                                                 <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100">
                                                                     <ShieldOff className="w-4 h-4" /> Decommission
                                                                 </button>

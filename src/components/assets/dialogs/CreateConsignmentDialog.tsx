@@ -152,7 +152,7 @@ export default function CreateConsignmentDialog({ isOpen, onClose, onSuccess }: 
                             </div>
                         </div>
 
-                        {['SUPERADMIN', 'SUPER_ADMIN'].includes(user?.role?.toUpperCase() || '') && (
+                        {['SUPERADMIN', 'SUPERADMIN'].includes(user?.role?.toUpperCase() || '') && (
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Branch ID *

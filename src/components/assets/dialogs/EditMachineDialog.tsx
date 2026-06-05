@@ -167,7 +167,7 @@ export default function EditMachineDialog({ isOpen, onClose, onSuccess, machine 
                         </div>
 
                         {/* Branch Search for Superadmins */}
-                        {['SUPERADMIN', 'SUPER_ADMIN'].includes(user?.role?.toUpperCase()) && (
+                        {['SUPERADMIN', 'SUPERADMIN'].includes(user?.role?.toUpperCase()) && (
                             <div className="relative" ref={branchRef}>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
                                     Branch Assignment
