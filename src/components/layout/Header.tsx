@@ -53,7 +53,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             </div>
           </div>
           <div className="text-left hidden md:block">
-            <p className="text-sm font-semibold text-[#0F172A] leading-tight">{user?.name || user?.username || 'User'}</p>
+            <p className="text-sm font-semibold text-[#0F172A] leading-tight">{user?.full_name || 'User'}</p>
             <p className="text-xs text-[#64748B] capitalize">{user?.role?.toLowerCase() || 'Super Admin'}</p>
           </div>
         </button>
