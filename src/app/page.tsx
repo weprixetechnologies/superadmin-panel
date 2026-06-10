@@ -66,7 +66,7 @@ export default function LoginPage() {
         {/* Text Area */}
         <div className="my-auto z-10 max-w-lg">
           <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-6 border border-emerald-100">
-            Welcome Back {APP_ROLE}! 👋
+            Welcome Back Superadmin! 👋
           </div>
           <h2 className="text-4xl font-semibold tracking-tight text-zinc-900 leading-tight mb-4">
             Sign in to continue managing your <span className="text-emerald-600">projects</span>
@@ -114,7 +114,7 @@ export default function LoginPage() {
         <div className="my-auto max-w-md w-full mx-auto">
 
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 mb-2">Welcome Back</h1>
+            <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 mb-2">Welcome Back <span className="text-emerald-600">Superadmin</span></h1>
             <p className="text-zinc-500 text-sm">Please sign in to your account to continue</p>
           </div>
 
