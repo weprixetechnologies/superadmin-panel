@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/axiosInstance';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181/backend';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:28471';
 const APP_ROLE = 'SUPERADMIN';
 
 export default function LoginPage() {
@@ -66,7 +66,7 @@ export default function LoginPage() {
         {/* Text Area */}
         <div className="my-auto z-10 max-w-lg">
           <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-6 border border-emerald-100">
-            Welcome Back! 👋
+            Welcome Back {APP_ROLE}! 👋
           </div>
           <h2 className="text-4xl font-semibold tracking-tight text-zinc-900 leading-tight mb-4">
             Sign in to continue managing your <span className="text-emerald-600">projects</span>

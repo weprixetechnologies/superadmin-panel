@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
     Search, Filter, Plus, ChevronLeft, ChevronRight, Eye, 
-    MoreVertical, Edit, MapPin, Truck, AlertTriangle, ShieldOff
+    MoreVertical, Edit, MapPin, Truck, AlertTriangle, ShieldOff, Upload
 } from 'lucide-react';
 import { machineApi } from '@/apis/assets/machineApi';
 import { useAuth } from '@/context/AuthContext';
 import AddMachineDialog from '@/components/assets/dialogs/AddMachineDialog';
 import MapTidDialog from '@/components/assets/dialogs/MapTidDialog';
+import BulkMachineImportModal from '@/components/machines/BulkMachineImportModal';
 
 const STATUS_COLORS: Record<string, string> = {
     IN_STOCK: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -39,6 +40,7 @@ function MachinesPageContent() {
     });
 
     const [addOpen, setAddOpen] = useState(false);
+    const [bulkImportOpen, setBulkImportOpen] = useState(false);
     const [mapTidOpen, setMapTidOpen] = useState(false);
     const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
 
@@ -109,13 +111,22 @@ function MachinesPageContent() {
                     <p className="text-slate-500 mt-1">Manage all POS terminals and their lifecycle</p>
                 </div>
                 {user?.role !== 'ENGINEER' && (
-                    <button 
-                        onClick={() => setAddOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Add Machine
-                    </button>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => setBulkImportOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-emerald-200 hover:bg-emerald-50 text-emerald-700 font-medium rounded-xl transition-colors shadow-sm"
+                        >
+                            <Upload className="w-5 h-5" />
+                            Bulk Import
+                        </button>
+                        <button 
+                            onClick={() => setAddOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add Machine
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -332,6 +343,15 @@ function MachinesPageContent() {
                 currentTid={machines.find((m: any) => m.id === selectedMachineId)?.tid}
                 onSuccess={() => {
                     fetchMachines();
+                }}
+            />
+
+            <BulkMachineImportModal 
+                isOpen={bulkImportOpen}
+                onClose={() => setBulkImportOpen(false)}
+                onSuccess={() => {
+                    fetchMachines();
+                    fetchStats();
                 }}
             />
         </div>

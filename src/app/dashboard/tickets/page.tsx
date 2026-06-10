@@ -8,6 +8,7 @@ import {
     MoreVertical, UserPlus, XCircle, Key, CheckCircle2, ShieldAlert 
 } from 'lucide-react';
 import api from '@/utils/axiosInstance';
+import BulkAssignModal from '@/components/tickets/BulkAssignModal';
 import { AuthUser } from '@/utils/auth';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -38,6 +39,8 @@ function TicketsPageContent() {
     
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showBulkAssignModal, setShowBulkAssignModal] = useState(false);
+    const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [filters, setFilters] = useState({
@@ -101,13 +104,24 @@ function TicketsPageContent() {
                     <p className="text-slate-500 mt-1">Manage and track service requests</p>
                 </div>
                 {user?.role !== 'ENGINEER' && (
-                    <Link 
-                        href="/dashboard/tickets/create"
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Create Ticket
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        {selectedTickets.length > 0 && (
+                            <button 
+                                onClick={() => setShowBulkAssignModal(true)}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-xl transition-colors"
+                            >
+                                <UserPlus className="w-5 h-5" />
+                                Bulk Assign ({selectedTickets.length})
+                            </button>
+                        )}
+                        <Link 
+                            href="/dashboard/tickets/create"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-emerald-600/20"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Create Ticket
+                        </Link>
+                    </div>
                 )}
             </div>
 
@@ -156,6 +170,20 @@ function TicketsPageContent() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-200">
+                                <th className="px-6 py-4 w-12 text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                        checked={tickets.length > 0 && selectedTickets.length === tickets.length}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedTickets(tickets.map((t: any) => t.id));
+                                            } else {
+                                                setSelectedTickets([]);
+                                            }
+                                        }}
+                                    />
+                                </th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ticket / Service</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Merchant Info</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status & Priority</th>
@@ -166,7 +194,7 @@ function TicketsPageContent() {
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                                         <div className="animate-pulse flex flex-col items-center gap-3">
                                             <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                                             Loading tickets...
@@ -175,7 +203,7 @@ function TicketsPageContent() {
                                 </tr>
                             ) : tickets.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center">
+                                    <td colSpan={6} className="px-6 py-12 text-center">
                                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
                                             <Search className="w-8 h-8 text-slate-400" />
                                         </div>
@@ -185,7 +213,21 @@ function TicketsPageContent() {
                                 </tr>
                             ) : (
                                 tickets.map((t: any) => (
-                                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                                    <tr key={t.id} className={`hover:bg-slate-50 transition-colors ${selectedTickets.includes(t.id) ? 'bg-indigo-50/30' : ''}`}>
+                                        <td className="px-6 py-4 w-12 text-center">
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                                checked={selectedTickets.includes(t.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedTickets(prev => [...prev, t.id]);
+                                                    } else {
+                                                        setSelectedTickets(prev => prev.filter(id => id !== t.id));
+                                                    }
+                                                }}
+                                            />
+                                        </td>
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-slate-900">{t.ticket_number}</div>
                                             <div className="text-sm text-slate-500 mt-0.5">{t.service_type}</div>
@@ -261,6 +303,16 @@ function TicketsPageContent() {
                     </div>
                 )}
             </div>
+            <BulkAssignModal 
+                isOpen={showBulkAssignModal}
+                onClose={() => setShowBulkAssignModal(false)}
+                selectedTickets={selectedTickets}
+                onSuccess={() => {
+                    setShowBulkAssignModal(false);
+                    setSelectedTickets([]);
+                    fetchTickets();
+                }}
+            />
         </div>
     );
 }

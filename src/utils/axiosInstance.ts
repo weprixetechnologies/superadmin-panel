@@ -14,8 +14,8 @@ import axios, {
     InternalAxiosRequestConfig,
 } from 'axios';
 
-// const API_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? `http://${window.location.hostname}:4898` : 'http://72.60.219.181/backend');
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://72.60.219.181/backend';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? `http://${window.location.hostname}:4898` : 'http://localhost:28471');
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:28471';
 // ─── Auth endpoints that must NEVER be retried ────────────────────────────────
 const AUTH_ENDPOINTS = ['/auth/validate-me', '/auth/refresh-token', '/auth/logout', '/auth/login'];
 
