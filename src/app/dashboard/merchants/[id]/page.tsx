@@ -36,7 +36,7 @@ export default function MerchantDetails() {
                 merchantApi.getMerchantMachineHistory(id)
             ]);
 
-            if (merchRes.data.success) setMerchant(merchRes.data.data);
+            if (merchRes.data.success) setMerchant(merchRes.data.data.merchant || merchRes.data.data);
             if (machRes.data.success) setMachines(machRes.data.data);
             if (histRes.data.success) setHistory(histRes.data.data);
             
